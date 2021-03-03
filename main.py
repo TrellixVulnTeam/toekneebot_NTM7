@@ -1,4 +1,7 @@
+import json
+
 import discord
+import os
 import random
 from discord import member
 from discord.ext import commands
@@ -123,5 +126,7 @@ async def teams(ctx, amount=2):
 async def cheers(ctx):
     await ctx.send('DRINK UP BITCHES!')
 
-client.run('NzkxNDkwNzE1NjkwNTk4NDEw.X-P7Kw.ZXAfWXeJvOXljhQtKe99LWqBQcQ')
+f = open('config.json')
+data = json.load(f)
+client.run(data['token'])
 
