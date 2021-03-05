@@ -26,16 +26,15 @@ async def on_ready():
 #    print(f'{member} has left the server.')
 
 @client.command(pass_context=True)
-async def roll(ctx):
+async def roll(ctx, d=6):
     username = ctx.message.author.name
-    num = random.randint(1, 6)
-    await ctx.send(f'{username} rolled a {num}')
-
-@client.command(pass_context=True)
-async def roll20(ctx):
-    username = ctx.message.author.name
-    num = random.randint(1, 20)
-    await ctx.send(f'{username} rolled a {num}')
+    num = random.randint(1, d)
+    if d == 20 and num == 20:
+        await ctx.send(f'{username} rolled a natural 20 on a d20!')
+    elif d == 20 and num == 1:
+        await ctx.send(f'{username} rolled a natural 1 on a d20!')
+    else:
+        await ctx.send(f'{username} rolled a d{d} and got {num}')
 
 @client.command(pass_context=True)
 async def hello(ctx):
@@ -95,15 +94,17 @@ async def champselect(ctx):
 
 @client.command(pass_context=True)
 async def teams(ctx, amount=2):
-    #grabs voice channel id of user
-    voice_state = ctx.message.author.voice.channel.id
 
-    #sends message indicating must be in voice channel
-    if voice_state is None:
+    # sends message indicating must be in voice channel
+    if(ctx.message.author.voice is None):
         return await ctx.send('You need to be in a voice channel to use this command.')
 
+    # grabs voice channel id of user
+    voice_channel_id = ctx.message.author.voice.channel.id
+    #voice_state = ctx.message.author.voice
+
     #grabs voice channel by id
-    VC = discord.utils.get(ctx.guild.channels,id=voice_state)
+    VC = discord.utils.get(ctx.guild.channels,id=voice_channel_id)
     await ctx.send(VC)
 
     #declares full list and adds all users in VC to list
