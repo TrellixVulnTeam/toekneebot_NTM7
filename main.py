@@ -5,6 +5,7 @@ import os
 import random
 from discord import member
 from discord.ext import commands
+from discord import ChannelType
 from discord.ext.commands import Bot
 intents = discord.Intents.default()
 intents.members = True
@@ -67,45 +68,31 @@ async def _8ball(ctx, *, question):
     await ctx.send(f'{username} asked the question: {question}\nAnswer: {random.choice(responses)}')
 
 @client.command(pass_context=True)
-async def champselect(ctx):
-    username = ctx.message.author.name
-    champions = ['Aatrox','Ahri','Akali','Alistar','Amumu','Anivia','Annie',
-                 'Aphelios','Ashe','Aurelion Sol','Azir','Bard','Blitzcrank',
-                 'Brand','Braum','Caitlyn','Camille','Cassiopeia','ChoGath',
-                 'Corki','Darius','Diana','Dr. Mundo','Draven','Ekko','Elise',
-                 'Evelynn','Ezreal','Fiddlesticks','Fiora','Fizz','Galio',
-                 'Gangplank','Garen','Gnar','Gragas','Graves','Hecarim',
-                 'Heimerdinger','Illaoi','Irelia','Ivern','Janna','Jarvan IV',
-                 'Jax','Jayce','Jhin','Jinx','KaiSa','Kalista','Karma','Karthus',
-                 'Kassadin','Katarina','Kayle','Kayn','Kennen','KhaZix','Kindred',
-                 'Kled','KogMaw','LeBlanc','Lee Sin','Leona','Lillia','Lissandra',
-                 'Lucian','Lulu','Lux','Malphite','Malzahar','Maokai','Master Yi',
-                 'Miss Fortune','Mordekaiser','Morgana','Nami','Nasus','Nautilus',
-                 'Neeko','Nidalee','Nocturne','Olaf','Orianna','Ornn','Pantheon',
-                 'Poppy','Pyke','Qiyana','Quinn','Rakan','Rammus','RekSai','Rell',
-                 'Renekton','Rengar','Riven','Rumble','Ryze','Samira','Sejuani','Senna',
-                 'Seraphine','Sett','Shaco','Shen','Shyvana','Singed','Sion','Sivir',
-                 'Skarner','Sona','Soraka','Swain','Sylas','Syndra','Tahm Kench','Taliyah',
-                 'Talon','Taric','Teemo','Thresh','Tristana','Trundle','Tryndamere','Twisted Fate',
-                 'Twitch','Udyr','Urgot','Varus','Vayne','Veigar','VelKoz','Vi','Viktor','Vladimir',
-                 'Volibear','Warwick','Wukong','Xayah','Xerath','Xin Zhao','Yasuo','Yone','Yorick',
-                 'Yuumi','Zac','Zed','Ziggs','Zilean','Zoe','Zyra',]
-    await ctx.send(f'{username} should play {random.choice(champions)}')
-
-@client.command(pass_context=True)
 async def teams(ctx, amount=2):
 
     # sends message indicating must be in voice channel
     if(ctx.message.author.voice is None):
         return await ctx.send('You need to be in a voice channel to use this command.')
 
-    # grabs voice channel id of user
-    voice_channel_id = ctx.message.author.voice.channel.id
-    #voice_state = ctx.message.author.voice
+    # grabs voice channel  of user
+    voice_channel = ctx.message.author.voice.channel
 
-    #grabs voice channel by id
-    VC = discord.utils.get(ctx.guild.channels,id=voice_channel_id)
-    await ctx.send(VC)
+    # grabs voice channel by id
+    VC = discord.utils.get(ctx.guild.channels, id=voice_channel.id)
+
+    #initialize variable to track if other channels have members, assumes false
+    otherChannelsHasMembers = False
+
+    #iterates through each channel in the server
+    for channel in ctx.message.guild.channels:
+        #checks if the channel is a voice channel AND not the author's voice channel AND if there are members in it
+        if channel.type == ChannelType.voice and channel != voice_channel and channel.members != []:
+            otherChannelsHasMembers = True
+            break
+
+    #prints the Channel Name only if there are people in other voice channels
+    if otherChannelsHasMembers == True:
+        await ctx.send(VC)
 
     #declares full list and adds all users in VC to list
     fulllist = []
@@ -120,12 +107,41 @@ async def teams(ctx, amount=2):
 
     #split list into desired amount
     groupedlist = [fulllist[i::amount] for i in range(amount)]
+    num = 1
+    for x in groupedlist:
+        team = ", ".join(x)
+        await ctx.send(f"Team {num}: {team}")
+        num += 1
 
-    await ctx.send(groupedlist)
-
-
+@client.command(pass_context=True)
 async def cheers(ctx):
     await ctx.send('DRINK UP BITCHES!')
+
+@client.command(pass_context=True)
+async def get_members(ctx, role_name):
+    role = discord.utils.find(
+        lambda r: r.name == role_name, ctx.guild.roles)
+    if role is None:
+        await ctx.send(f"{role_name} does not exist!")
+        return
+    roleList = []
+    for user in ctx.guild.members:
+        if role in user.roles:
+            if user.nick is None:
+                roleList.append(user.name)
+            else:
+                roleList.append(user.nick)
+    if roleList == []:
+        await ctx.send(f"No members in that role!")
+    else:
+        join_string = ", ".join(roleList)
+        await ctx.send(f"List of members in {role}: {join_string}")
+
+
+
+
+
+
 
 f = open('config.json')
 data = json.load(f)
