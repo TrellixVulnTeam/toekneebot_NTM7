@@ -115,7 +115,7 @@ async def teams(ctx, amount=2):
 
 @client.command(pass_context=True)
 async def cheers(ctx):
-    await ctx.send('DRINK UP BITCHES!')
+    await ctx.send('Take a drink!')
 
 @client.command(pass_context=True)
 async def get_members(ctx, role_name):
